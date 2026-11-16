@@ -1,56 +1,55 @@
-# ZipStream 📦⚡
+# ZipStream
 
-**Download what's inside a ZIP — not the ZIP.**
+**Download what's inside an archive — not the archive.**
 
-ZipStream is a native Android downloader built with Kotlin and C++ that streams and extracts files directly from remote `.zip` archives using HTTP byte-range requests. Instead of downloading a massive 30GB–60GB archive and needing **double the free space** just to unpack it, ZipStream reads the remote central directory and writes extracted files straight to your storage on the fly.
+Paste a link to a ZIP, RAR or ISO. ZipStream reads only the archive's index over the network, then
+downloads and unpacks each file straight into `Download/ZipStream/<name>/`. The archive itself never touches
+your storage, so a phone that can't hold "zip + extracted files" can still get the files.
 
----
+## Features
+- ZIP / ZIP64, stored RAR (incl. `.part1.rar` sets) and ISO 9660 streaming
+- Queue several links, run up to 4 archives at once, retry / cancel each
+- Built-in link resolvers: **Pixeldrain**, **MediaFire**, **Buzzheavier**
+- Parallel connections, resume for stored files, skip already-downloaded files
+- Avoid-rate-limits mode (fewer connections + automatic back-off), Wi-Fi only
+- Name filter (only download e.g. `.rpf`), custom headers for cookie/token links
+- Share links to the app from any browser
+- Native C++ core, Material 3 UI, light/dark
 
-### ✨ Key Features
-* **Zero Double-Storage Overhead:** Never hold both the compressed `.zip` file and the unpacked files on your phone at the same time.
-* **Native C++ Core & ZIP64 Support:** Custom C++ engine (`zip_format.cpp`, `entry_writer.cpp`) parses standard and ZIP64 central directories (tested with 70,000+ entries) and verifies CRC32 checksums and file sizes on the fly.
-* **Parallel Byte-Range Streaming:** Configurable 1–8 concurrent HTTP range connections for fast downloads.
-* **Smart Resume & Skip:** Automatically skips already-completed files and resumes partially written uncompressed (`STORE`) entries after a connection drop.
-* **Selective File Filtering:** Filter downloads by filename or extension (e.g., `.rpf`) so you only pull the exact files you need.
-* **Custom HTTP Headers:** Add custom cookies or authorization tokens for restricted download links.
-* **Background Foreground Service:** Keeps streaming reliably in the background with a live progress notification and one-tap **Cancel** button.
-* **Dark-First Material 3 UI:** Clean dashboard showing live download speed, ETA, file count, overall progress, and individual per-file progress bars.
+## How it works
+1. `Range` request for the end of the file → C++ finds the ZIP central directory (ZIP64 aware).
+2. Per file: `Range` request for exactly its bytes → C++ inflates, CRC-checks and writes to disk.
+3. RAR/ISO: block headers / directory records are walked with tiny range requests; stored data is copied directly.
 
----
+## Requirements
+- Android 13+ (minSdk 33)
+- The server must support HTTP `Range` requests (most file hosts and CDNs do)
+- "All files access" permission (asked once) to create `Download/ZipStream/`
 
-### 📱 How It Works
-1. **Paste a direct download link** (must be hosted on a server that supports HTTP `Accept-Ranges: bytes`).
-2. **Grant "All Files Access"** on first launch so ZipStream can write directly to your public storage.
-3. **Tap Start** — ZipStream fetches the remote ZIP directory, preserves the exact folder hierarchy, and extracts everything straight into `Download/ZipStream/<zip name>/`.
+## Works well with
+GitHub Releases, Internet Archive, Hugging Face, SourceForge, Pixeldrain, MediaFire, Buzzheavier,
+Dropbox (`?dl=1`), most personal servers and CDNs.
 
----
+## Doesn't work (yet)
+Google Drive and Mega links, ad-gated/captcha hosts, expiring links mid-download, compressed RAR,
+7z, UDF-only ISOs, password-protected archives.
 
-### ⚠️ Current Limitations
-* **Server Requirements:** The host server must support HTTP byte-range requests (`206 Partial Content`).
-* **Encryption & Compression:** Password-protected ZIPs and non-standard compression methods are currently skipped/marked as failed entries.
-* **Resume Behavior:** Uncompressed (`STORE`) files resume from the exact byte offset; compressed (`DEFLATE`) entries restart from zero if interrupted.
+## Build
+Open in Android Studio / AndroidIDE, or:
+```
+./gradlew assembleDebug
+```
+Needs JDK 17, NDK 28.2.13676358 and CMake (the project pins 4.1.2 for AndroidIDE; CI uses 3.22.1).
 
----
+Project layout:
+- `app/src/main/cpp` – `zip_format`, `rar_format`, `iso_format`, `entry_writer`, JNI bridge
+- `app/src/main/kotlin/com/zipstream/app` – UI, download engine & service, resolvers, planners
 
-### 🛠️ Tech Stack & Architecture
-* **Language:** Kotlin + C++17 (connected via JNI)
-* **Build System:** Gradle, Android NDK, CMake, ViewBinding
-* **UI:** Material Design 3 (Dark-first theme)
-* **Package Name:** `com.zipstream.app`
+## Releasing
+Push a tag like `v1.0.0` — the GitHub Action builds the APK and attaches it to the release.
 
----
+## Disclaimer
+ZipStream is a download tool. Only download content you have the right to use.
 
-### 🚧 Project Status
-ZipStream is currently in active development. The native C++ core has passed stress testing on large ZIP64 archives, and final Android build verification is underway.
-
-👉 **Click `Watch` -> `Custom` -> `Releases` at the top right of this repository to get notified as soon as the first beta APK is uploaded!**
-
----
-
-### 🗺️ Planned Roadmap
-- [x] Native C++ ZIP & ZIP64 central directory parser
-- [x] Parallel HTTP byte-range downloader (1–8 threads)
-- [x] File extension filtering & custom HTTP headers
-- [ ] Built-in link resolvers (Buzzheavier, MediaFire, Pixeldrain)
-- [ ] Sequential `.rar` & split `.part1.rar` streaming support
-- [ ] `.7z` & `.iso` header mapping
+## License
+MIT — see [LICENSE](LICENSE).
