@@ -34,9 +34,6 @@ Dropbox (`?dl=1`), most personal servers and CDNs.
 Google Drive and Mega links, ad-gated/captcha hosts, expiring links mid-download, compressed RAR,
 7z, UDF-only ISOs, password-protected archives.
 
-## Releasing
-Push a tag like `v1.0.0` — the GitHub Action builds the APK and attaches it to the release.
-
 ## Disclaimer
 ZipStream is a download tool. Only download content you have the right to use.
 
