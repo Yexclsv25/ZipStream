@@ -34,17 +34,6 @@ Dropbox (`?dl=1`), most personal servers and CDNs.
 Google Drive and Mega links, ad-gated/captcha hosts, expiring links mid-download, compressed RAR,
 7z, UDF-only ISOs, password-protected archives.
 
-## Build
-Open in Android Studio / AndroidIDE, or:
-```
-./gradlew assembleDebug
-```
-Needs JDK 17, NDK 28.2.13676358 and CMake (the project pins 4.1.2 for AndroidIDE; CI uses 3.22.1).
-
-Project layout:
-- `app/src/main/cpp` – `zip_format`, `rar_format`, `iso_format`, `entry_writer`, JNI bridge
-- `app/src/main/kotlin/com/zipstream/app` – UI, download engine & service, resolvers, planners
-
 ## Releasing
 Push a tag like `v1.0.0` — the GitHub Action builds the APK and attaches it to the release.
 
